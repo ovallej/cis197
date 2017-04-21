@@ -8,6 +8,20 @@ class About extends Component {
   static propTypes = {}
   static defaultProps = {}
   state = {}
+  
+  constructor(){
+    super();
+  }
+
+  componentDidMount() {
+    console.log(this.props);
+    console.log(this.props.params);
+    console.log(this.props.routeParams);
+    console.log(this.props.location);
+    console.log(this.props.route);
+
+  }
+  
 
 
   render() {

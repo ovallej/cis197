@@ -1,19 +1,31 @@
 // src/components/App/index.js
 import React, { Component } from 'react';
 import classnames from 'classnames';
+import { Router, Route , Link} from 'react-router'
 
 import logo from './logo.svg';
 import './style.css';
 import $ from 'jquery'; 
-
+//import { Link } from 'react-router-dom';
+//        <Link to="/game">Click me</Link>
 
 class App extends Component {
   static propTypes = {}
   static defaultProps = {}
   state = {}
 
+  constructor() {
+    super();
+    console.log(this.props);
+  }
+
   componentDidMount() {
     console.log(this.props);
+    console.log(this.props.params);
+    console.log(this.props.routeParams);
+  
+    console.log(this.props.location);
+    console.log(this.props.route);
     $.ajax({
       url: '/data',//this.props.url,
       dataType: 'html',
@@ -40,6 +52,7 @@ class App extends Component {
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
+      <Link to="/about" params={'hi'}> Click me</Link>
       </div>
     );
   }
