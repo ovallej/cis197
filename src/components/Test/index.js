@@ -60,6 +60,7 @@ class Board extends Component {
       '7:30', '8:00', '8:30'
     ],
     */
+    console.log(this);
     var times = ['9:00', '10:00',
         '11:00', '12:00',
         '1:00', '2:00', '3:00',
@@ -130,6 +131,8 @@ class Board extends Component {
 
 
   render() {
+    console.log(this);
+    console.log(this.props);
     const status = 'Next player: X';
     const { className, ...props } = this.props;
     var curr = this;
@@ -184,3 +187,4 @@ class Game extends Component {
 }
 
 export default Game;
+export default Board;

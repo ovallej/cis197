@@ -152,9 +152,14 @@ app.post('/event', (req, res) => {
   });
 });
 
-app.get('/eventPage/:eventName', (req, res) => {
-	console.log('event/eventname');
-	console.log(req.params.eventName);
+
+app.get('/eventData/:eventName', (req, res) => {
+  console.log('event/eventname');
+  console.log(req.params.eventName);
+  Events.findOne({ eventName: req.params.eventName }, function(err, event) {
+    res.json(event);
+  });
+  //res.json({message : 'LEMMEATHIM'});
 });
 
 
@@ -234,7 +239,7 @@ app.get('/login', (req, res) => {
 
 app.get('*', (req, res) => {
   //res.sendFile(path.resolve(__dirname, '..', 'build', 'index.html'));
-  res.render(path.resolve(__dirname, '..', 'build', 'index.html'), { test: 'OMGAHH'});
+  res.render(path.resolve(__dirname, '..', 'build', 'index.html'), { test: 'OMGAHH' });
 });
 
 
