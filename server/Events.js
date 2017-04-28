@@ -32,7 +32,7 @@ eventSchema.statics.addUser = function(eventName, user, cb) {
       console.log('no event');
       cb(false);
     } else {
-      //event.users.push(user);
+      event.users.push(user);
       event.eventAvailability.push({ user: user, availability: new Array(14).fill(0).map(() => new Array(event.eventDates.length).fill(0)) });
       event.save(function(err) {
         if (err) throw err;

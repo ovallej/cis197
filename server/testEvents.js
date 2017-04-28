@@ -13,10 +13,11 @@ mongoose.connect('mongodb://localhost/newDb');
 // });
 
 
-// Events.findOne({ eventName: 'event3' }, function(err, event) {
+// Events.findOne({ eventName: 'test2' }, function(err, event) {
 //   console.log(err);
 //   console.log(event);
 // });
+
 // Events.find({ eventName: 'event2' }, function(err, event) {
 //   console.log(err);
 //   console.log(event);
@@ -27,17 +28,17 @@ mongoose.connect('mongodb://localhost/newDb');
 //   });
 
 
-// Events.addUser('test1', 'u1', function(err, res) {
-//   if (err) console.log(err);
-//   else {
-//     console.log("SUCCESS");
-//     console.log(res);
-//     Events.find({ eventName: 'event1' }, function(err, event) {
-//       console.log(err);
-//       console.log(event);
-//     });
-//   }
-// });
+Events.addUser('test2', 'u2', function(err, res) {
+  if (err) console.log(err);
+  else {
+    console.log("SUCCESS");
+    console.log(res);
+    Events.find({ eventName: 'event1' }, function(err, event) {
+      console.log(err);
+      console.log(event);
+    });
+  }
+});
 
 
 
@@ -55,10 +56,10 @@ mongoose.connect('mongodb://localhost/newDb');
 
 // Events.addUser('event1', 'u1')
 
-Events.findOne({eventName: 'test1'}, function (err, event){
-  console.log(event);
-  console.log(event.eventAvailability);
-});
+// Events.findOne({eventName: 'test1'}, function (err, event){
+//   console.log(event);
+//   console.log(event.eventAvailability);
+// });
 
 // Events.findUser('test1', 'u1', function(data) {
 //   console.log('u1');

@@ -1,6 +1,7 @@
 // src/components/NotFound/index.js
 import React, { Component } from 'react';
 import classnames from 'classnames';
+import { withRouter } from 'react-router' 
 
 import './style.css';
 import Square from './Square';
@@ -8,13 +9,13 @@ import $ from 'jquery';
 //        <Square />
 
 //export default class Calendar extends Component {
-export default class Calendar extends Component {
+class Calendar extends Component {
   //static propTypes = {}
   //static defaultProps = {}
   //state = {}
 
-  constructor(){
-    super();
+  constructor(props){
+    super(props);
     var days = [0,1,2,3,4,5,6];
     var weeks = [0,1,2,3,4];
 
@@ -68,18 +69,23 @@ export default class Calendar extends Component {
   }
 
   handleSubmit(event) {
+    console.log(this.props);
     var data = {event: this.state.value, dates:this.state.selected};
     console.log(data);
-    var success = function (data){
-      console.log(data);
-    }
     $.ajax({
-      type: "POST",
+      type: 'POST',
       url: '/event',
       dataType: 'json',
       data: data,
-      success: success.bind(this)
+      success: function(data) {
+        console.log(data);
+        this.props.router.push('/EventPage/' + this.state.value);
+      }.bind(this),
+      error: function(err) {
+        console.log(err);
+      }.bind(this)
     });
+
 
 /*
     $.ajax({
@@ -111,7 +117,7 @@ export default class Calendar extends Component {
     */
 
 
-    //event.preventDefault();
+    event.preventDefault();
   }
 
 
@@ -151,3 +157,5 @@ export default class Calendar extends Component {
     );
   }
 }
+
+export default withRouter(Calendar);

@@ -78,7 +78,8 @@ class Board extends Component {
       inputVal: '',
       loggedIn: false,
       user: '',
-      passVal: ''
+      passVal: '',
+      auth: false
     };
 
     this.handleNameChange = this.handleNameChange.bind(this);
@@ -96,10 +97,10 @@ class Board extends Component {
       newDates.push(inputDates[i].month + '/' + inputDates[i].day);
     }
     var userAvail = [];
-    var user = this.props.data.user;
+    var user = this.props.user;
     console.log(user);
-    var logged = (this.props.data.user) ? true : false;
-    console.log('logged' + logged);
+    var logged = ((this.props.user) && this.props.loggedEvent === this.props.data.eventName) ? true : false;
+    console.log('logged' + logged + " " + this.props.user);
     var availabilities = this.props.data.eventAvailability;
     for (var i = 0; i < availabilities.length; i++) {
       console.log(availabilities[i]);
@@ -111,9 +112,10 @@ class Board extends Component {
     this.setState({
       days: new Array(newDates.length).fill(0),
       dayStrings: newDates,
-      grid: userAvail,
+      grid: availabilities.length === 0 ? this.state.grid : userAvail,
       loggedIn: logged,
-      user: user
+      user: user,
+      auth: this.props.auth
     });
 
   }
@@ -202,6 +204,7 @@ class Board extends Component {
         })
       }.bind(this),
       error: function(xhr, status, err) {
+        console.log("GOT AN ERROR?");
         console.log(err);
       }.bind(this)
     })
@@ -240,6 +243,7 @@ class Board extends Component {
         })
       }.bind(this),
       error: function(xhr, status, err) {
+        console.log('error');
         console.log(err);
       }.bind(this)
     })
@@ -252,15 +256,56 @@ class Board extends Component {
       url: '/data', //this.props.url,
       dataType: 'json',
       cache: false,
+      type: 'POST',
+      data: { dates: this.props.data.eventDates },
       success: function(data) {
+        console.log(data);
+        var events = data.message;
+        const grid = this.state.grid.slice();
+        var eventDates = this.props.data.eventDates;
+        console.log(this.state.grid);
+
+        function indexOf(event, eventDates) {
+          for (var i = 0; i < eventDates.length; i++) {
+            if(event.startDay == eventDates[i].day && event.month == eventDates[i].month) {
+              return i;
+            }
+          }
+          return -1;
+        }
+
+        for (var i = 0; i < events.length; i++) {
+          var idx = indexOf(events[i], eventDates);
+          if(idx >= 0) {
+            for (var j = events[i].startHour; j < events[i].endHour; j++) {
+              grid[j - 9][idx] = '1';
+            }
+          }
+
+        }
+        this.setState({ grid: grid });
+
+        /*
+
+        currSelected.sort(function(x, y) {
+        if (y.month !== x.month) {
+          return x.month - y.month;
+        } else {
+          return x.day - y.day;
+        }
+      });
+      */
+
+        /*
         const grid = this.state.grid.slice();
         var events = data.message;
         for (var i = 0; i < events.length; i++) {
           for (var j = events[i].startHour; j < events[i].endHour; j++) {
-            grid[j - 9][events[i].startDay] = 1;
+            grid[j - 9][events[i].startDay] = '1';
           }
         }
         this.setState({ grid: grid });
+        */
       }.bind(this),
       error: function(xhr, status, err) {
         //console.error(this.props.url, status, err.toString());
@@ -295,14 +340,22 @@ class Board extends Component {
 
     return (
       <div className={classnames('Board', className)} {...props}>
+        <a href="/auth/google">Sign In with Google</a>
         <div className="status">{status}</div>
         {this.state.loggedIn ? 
         <div id='board-container'>
         {dateRow}
         {mapped}
+        <a href="/logout">Logout</a>
+        {!this.state.auth ? 
+        <p>
+        <a href="/auth/google">Sign In with Google</a>
+        </p>
+        :
         <button className={classnames('Square', className)} {...props} onClick={() => this.fillClick()}>
         FILL
       </button>
+       }
       </div >: 
         <form onSubmit={this.handleSubmit}>
           <label>

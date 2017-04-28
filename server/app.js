@@ -89,9 +89,19 @@ passport.deserializeUser(function(user, done) {
 //   request.  The first step in Google authentication will involve redirecting
 //   the user to google.com.  After authorization, Google will redirect the user
 //   back to this application at /auth/google/callback
+
+app.get('/auth/google', function (req, res, next){
+  console.log(req.path);
+  console.log(req.get('Referrer'));
+  req.session.returnTo = req.get('Referrer');
+  next();
+})
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.login'] }));
 
+// app.get('/auth/google', function (req, res) {
+//   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.login'] }));
+// });
 // GET /auth/google/callback
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
@@ -100,8 +110,12 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
+    console.log(req.path);
     console.log("authenticateD");
-    res.redirect('/game');
+    console.log(req.session.returnTo);
+    var returnTo = req.session.returnTo;
+    req.session.returnTo = null;
+    res.redirect(returnTo);
   });
 
 app.get('/test', function(req, res) {
@@ -134,6 +148,7 @@ app.get('/test', function(req, res) {
   });
   res.redirect('/game');
 
+
 });
 
 /********** GOOGLE CALENDAR AUTH CODE *******/
@@ -148,7 +163,7 @@ app.post('/event', (req, res) => {
     if (err) console.log(err);
     else {
       console.log('SUCCESS ADDED EVENT: ' + req.body.event);
-      res.redirect('/eventPage/' + req.body.event);
+      res.json('SUCCESS');
     }
   });
 });
@@ -164,15 +179,7 @@ app.post('/updateAvailability', (req, res) => {
   Events.updateAvailability(eventName,req.body.user, req.body.availability, function(){
     console.log('SUCCESS?');
   });
-  /*
-  Events.addEvent(req.body.event, req.body.dates, function(err) {
-    if (err) console.log(err);
-    else {
-      console.log('SUCCESS ADDED EVENT: ' + req.body.event);
-      res.redirect('/eventPage/' + req.body.event);
-    }
-  });
-  */
+
 });
 
 app.get('/eventData/:eventName', (req, res) => {
@@ -180,14 +187,12 @@ app.get('/eventData/:eventName', (req, res) => {
   console.log(req.params.eventName);
   Events.findOne({ eventName: req.params.eventName }, function(err, event) {
     console.log('REQ SESSION NAME: ' + req.session.username);
+    console.log('REQ SESSION AUTH EVENTDATA: ' + req.isAuthenticated());
     var user = req.session.username ? req.session.username  : '';
-    // event.user = req.session.username ? req.session.username  : '';
-    // event.user = req.session.username;
-    // console.log(req.session.username);
-    // console.log(event);
-    res.json({event: event, user: user});
+    var loggedEvent = req.session.event ? req.session.event : '';
+
+    res.json({ event: event, user: user, auth: req.isAuthenticated(), loggedEvent: loggedEvent });
   });
-  //res.json({message : 'LEMMEATHIM'});
 });
 
 app.post('/loginForm', (req, res) => {
@@ -200,8 +205,11 @@ app.post('/loginForm', (req, res) => {
       res.send('Error! ' + err);
     } else {
       if (isRight) {
+        console.log('ISSRIGHT CHECKED LEGIT');
         req.session.username = user;
+        req.session.event = eventName;
         Events.findUser(eventName, user, function(data) {
+          console.log('IN EVENT FINDUSER');
           console.log(data);
           res.json({
             data: data,
@@ -226,85 +234,110 @@ app.post('/registerForm', (req, res) => {
   console.log(user);
   console.log(eventName);
   console.log(pass);
-  
+
   User.addUser(user, pass, function(err) {
-    if (err) res.send('error' + err);
+    if (err) {
+      console.log(err);
+    }
     else {
-      Events.addUser(eventName, user, function(data) {
-        console.log('SUCCESS ' + data);
-        res.json({
-          data: data,
-          user: user,
-          event: eventName
-        });
-      });
+      console.log('SUCCESSFULLY ADDED TO USER TABLE')
     }
   });
+
+  Events.addUser(eventName, user, function(data) {
+    console.log('ADDEDDSUSUSUSUUEURUR ' + data);
+    console.log('SUCCESS ADDED TO EVENT' + data);
+    req.session.username = user;
+    req.session.event = eventName;
+    res.json({
+      data: data,
+      user: user,
+      event: eventName
+    });
+  });
+
   
 });
 
 
-/*
-router.post('/loginAdmin', function (req, res) {
-  if (credentalsAreValid(req.body.username, req.body.password)) {
-    req.session.isAuthenticated = true;
-    res.send('Logged in as admin');
-  } else {
-    res.redirect('/loginAdmin');
-  }
-});
-*/
 
-app.get('/data', (req, res) => {
-  //console.log(req.user);
-  //console.log(req.session);
+app.post('/data', (req, res) => {
+  console.log('DATA ISAUTH ' + req.isAuthenticated());
   if (req.isAuthenticated()) {
+    console.log(req.body.dates);
+    var startDateArr = [];
+    var endDateArr = [];
+    for(var i = 0; i < req.body.dates.length; i++){
+      startDateArr.push(new Date(2017, req.body.dates[i].month, req.body.dates[i].day));
+      var newEndDate = new Date(2017, req.body.dates[i].month, req.body.dates[i].day);
+      newEndDate.setDate(newEndDate.getDate()+1);
+      endDateArr.push(newEndDate);
+    }
+    console.log(startDateArr);
+    console.log(endDateArr);
 
     var cal = goog.calendar('v3');
     cal.calendarList.list(function(err, calendarList) {
       if (err || !calendarList) {
+        console.log(calendarList);
+        console.log(err);
         res.json({ message: "I'm just testing to see if this works NOT" });
       }
 
-      var startDate = new Date(2017, 3, 17, 0, 0, 0, 0);
-      var endDate = new Date(2017, 3, 24, 0, 0, 0, 0);
-      var relevantEvents = [];
+      var total = 0;
       for (var i = 0; i < calendarList.items.length; i++) {
         if (calendarList.items[i].accessRole === 'owner') {
-          params = {
-            'calendarId': calendarList.items[i].id,
-            'singleEvents': true,
-            'timeMin': startDate.toISOString(),
-            'timeMax': endDate.toISOString()
-          }
-          cal.events.list(params, function(err, li) {
-
-            relevantEvents = relevantEvents.concat(li.items);
-            if (i === calendarList.items.length) {
-              //console.log(relevantEvents);
-              var response = [];
-              for (var j = 0; j < relevantEvents.length; j++) {
-                //console.log(relevantEvents[j]);
-                response.push({
-                  name: relevantEvents[j].summary,
-                  startDay: (new Date(relevantEvents[j].start.dateTime)).getDay(),
-                  startHour: (new Date(relevantEvents[j].start.dateTime)).getHours(),
-                  endDay: (new Date(relevantEvents[j].end.dateTime)).getDay(),
-                  endHour: (new Date(relevantEvents[j].end.dateTime)).getHours(),
-                  start: relevantEvents[j].start.dateTime,
-                  end: relevantEvents[j].end.dateTime
-                })
-              }
-              console.log(response);
-
-              res.json({ message: response });
-            }
-          });
+          total++;
         }
       }
+      total = total * startDateArr.length;
+      var counter = 0;
+
+      for (var d = 0; d < startDateArr.length; d++) {
+
+        var startDate = startDateArr[d];
+        var endDate = endDateArr[d];
+
+        var relevantEvents = [];
+        for (var i = 0; i < calendarList.items.length; i++) {
+          if (calendarList.items[i].accessRole === 'owner') {
+            params = {
+              'calendarId': calendarList.items[i].id,
+              'singleEvents': true,
+              'timeMin': startDate.toISOString(),
+              'timeMax': endDate.toISOString()
+            }
+            cal.events.list(params, function(err, li) {
+              counter++;
+
+              relevantEvents = relevantEvents.concat(li.items);
+              if (counter == total) {
+                var response = [];
+                for (var j = 0; j < relevantEvents.length; j++) {
+                  console.log('DAY');
+                  console.log((new Date(relevantEvents[j].start.dateTime)).getDate());
+                  response.push({
+                    name: relevantEvents[j].summary,
+                    startDay: (new Date(relevantEvents[j].start.dateTime)).getDate(),
+                    startHour: (new Date(relevantEvents[j].start.dateTime)).getHours(),
+                    endDay: (new Date(relevantEvents[j].end.dateTime)).getDate(),
+                    endHour: (new Date(relevantEvents[j].end.dateTime)).getHours(),
+                    month: (new Date(relevantEvents[j].start.dateTime)).getMonth(),
+                    start: relevantEvents[j].start.dateTime,
+                    end: relevantEvents[j].end.dateTime
+                  })
+                }
+                res.json({ message: response });
+              }
+            });
+          }
+        }
+      }
+
+
+
     });
 
-    //res.json({ message: "I'm just testing to see if this works AUTHENTICATED" });
   } else {
     res.json({ message: "I'm just testing to see if this works NOT" });
   }
@@ -314,6 +347,12 @@ app.get('/data', (req, res) => {
 
 app.get('/login', (req, res) => {
   res.render('login');
+});
+
+app.get('/logout', function(req, res) {
+  req.session.username = '';
+  req.logout();
+  res.redirect(req.get('Referrer'));
 });
 
 

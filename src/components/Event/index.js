@@ -16,7 +16,9 @@ class Event extends Component {
     this.state = {
       data: {},
       ready: false,
-      user: ''
+      user: '',
+      loggedEvent: '',
+      auth: false
     };
 
   }
@@ -32,7 +34,7 @@ class Event extends Component {
           //this.setState({data: data});
           console.log("SETTING STATE DATA_EVENTCOMPONENT");
           console.log(data);
-          this.setState({data: data.event, ready: true, user: data.user});
+          this.setState({data: data.event, ready: true, user: data.user, auth: data.auth, loggedEvent: data.loggedEvent});
       }.bind(this)
     });
 
@@ -51,7 +53,7 @@ class Event extends Component {
         <h1>
           Event {this.props.params.pathParam}
         </h1>
-        {this.state.ready ? (<div><Board data={data} user={this.state.user}/>
+        {this.state.ready ? (<div><Board data={data} user={this.state.user} auth={this.state.auth} loggedEvent={this.state.loggedEvent}/>
         <EventBoard data={data}/></div> ) : <p>Loading</p>}
         
       </div>
