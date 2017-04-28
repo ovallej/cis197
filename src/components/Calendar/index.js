@@ -68,7 +68,6 @@ export default class Calendar extends Component {
   }
 
   handleSubmit(event) {
-    alert('A name was submitted: ' + this.state.value);
     var data = {event: this.state.value, dates:this.state.selected};
     console.log(data);
     var success = function (data){

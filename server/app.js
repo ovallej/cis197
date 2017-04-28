@@ -63,7 +63,6 @@ passport.use(new GoogleStrategy({
     cal = goog.calendar('v3');
     cal.calendarList.list(function(err, calendarList) {
       console.log("IT WORKEDDADA");
-
     });
 
     done(null, profile);
@@ -77,10 +76,12 @@ app.use(cookieSession({
 app.use(passport.initialize());
 app.use(passport.session());
 passport.serializeUser(function(user, done) {
+  //user id?
   done(null, user);
 });
 
 passport.deserializeUser(function(user, done) {
+  //user id?
   done(null, user);
 });
 // GET /auth/google
@@ -153,13 +154,93 @@ app.post('/event', (req, res) => {
 });
 
 
+app.post('/updateAvailability', (req, res) => {
+  var user = req.body.user;
+  var availability = req.body.availability;
+  var eventName = req.body.eventName;
+  Events.findOne({eventName: eventName}, function(err, data) {
+    console.log(data);
+  });
+  Events.updateAvailability(eventName,req.body.user, req.body.availability, function(){
+    console.log('SUCCESS?');
+  });
+  /*
+  Events.addEvent(req.body.event, req.body.dates, function(err) {
+    if (err) console.log(err);
+    else {
+      console.log('SUCCESS ADDED EVENT: ' + req.body.event);
+      res.redirect('/eventPage/' + req.body.event);
+    }
+  });
+  */
+});
+
 app.get('/eventData/:eventName', (req, res) => {
   console.log('event/eventname');
   console.log(req.params.eventName);
   Events.findOne({ eventName: req.params.eventName }, function(err, event) {
-    res.json(event);
+    console.log('REQ SESSION NAME: ' + req.session.username);
+    var user = req.session.username ? req.session.username  : '';
+    // event.user = req.session.username ? req.session.username  : '';
+    // event.user = req.session.username;
+    // console.log(req.session.username);
+    // console.log(event);
+    res.json({event: event, user: user});
   });
   //res.json({message : 'LEMMEATHIM'});
+});
+
+app.post('/loginForm', (req, res) => {
+  var user = req.body.user;
+  var pass = req.body.pass;
+  var eventName = req.body.eventName;
+
+  User.checkIfLegit(user, pass, function(err, isRight) {
+    if (err) {
+      res.send('Error! ' + err);
+    } else {
+      if (isRight) {
+        req.session.username = user;
+        Events.findUser(eventName, user, function(data) {
+          console.log(data);
+          res.json({
+            data: data,
+            user: user,
+            event: eventName
+          });
+        });
+      } else {
+        res.status(401).json({
+          message: 'Invalid Password'
+        });
+      }
+    };
+  });
+});
+
+
+app.post('/registerForm', (req, res) => {
+  var user = req.body.user;
+  var eventName = req.body.eventName;
+  var pass = req.body.pass;
+  console.log(user);
+  console.log(eventName);
+  console.log(pass);
+  
+  User.addUser(user, pass, function(err) {
+    if (err) res.send('error' + err);
+    else {
+      Events.addUser(eventName, user, function(data) {
+        console.log('SUCCESS ' + data);
+        res.json({
+          data: data,
+          user: user,
+          event: eventName
+        });
+      });
+    }
+  });
+  
 });
 
 

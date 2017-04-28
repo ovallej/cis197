@@ -3,6 +3,7 @@ var eslint = require('gulp-eslint');
 //var zip = require('gulp-zip');
 
 var FILES = [
+  'server/app.js',
   'server/*.js',
   'components/*/*.js',
   'components/*.js'

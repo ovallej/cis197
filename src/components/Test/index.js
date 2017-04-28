@@ -32,8 +32,8 @@ class Board extends Component {
   static defaultProps = {}
   state = {}
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     /*
     this.state = {
       times: ['9:00', '9:15', '9:30', '9:45',
@@ -60,7 +60,6 @@ class Board extends Component {
       '7:30', '8:00', '8:30'
     ],
     */
-    console.log(this);
     var times = ['9:00', '10:00',
         '11:00', '12:00',
         '1:00', '2:00', '3:00',
@@ -71,14 +70,53 @@ class Board extends Component {
 
     var days = [1, 2, 3, 4, 5, 6, 7];
     this.state = {
+      data: this.props.data,
       times: times,
       days: days,
       grid: new Array(times.length).fill(0).map(() => new Array(days.length).fill(0)),
+      dayStrings : ['MON', 'TU', 'WED', 'TH', 'FRI', "SAT", "SUN"],
+      inputVal: '',
+      loggedIn: false,
+      user: '',
+      passVal: ''
     };
+
+    this.handleNameChange = this.handleNameChange.bind(this);
+    this.handlePassChange = this.handlePassChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
   }
 
+  componentDidMount() {
+    console.log(this.props);
+    console.log(this.props.data);
 
+    var newDates = [];
+    var inputDates = this.props.data.eventDates;
+    for (var i = 0; i < inputDates.length; i++) {
+      newDates.push(inputDates[i].month + '/' + inputDates[i].day);
+    }
+    var userAvail = [];
+    var user = this.props.data.user;
+    console.log(user);
+    var logged = (this.props.data.user) ? true : false;
+    console.log('logged' + logged);
+    var availabilities = this.props.data.eventAvailability;
+    for (var i = 0; i < availabilities.length; i++) {
+      console.log(availabilities[i]);
+      console.log(availabilities[i].user);
+      if(availabilities[i].user === 'u1') {
+        userAvail = availabilities[i].availability;
+      }
+    }
+    this.setState({
+      days: new Array(newDates.length).fill(0),
+      dayStrings: newDates,
+      grid: userAvail,
+      loggedIn: logged,
+      user: user
+    });
 
+  }
 
   renderSquare(i) {
     return <Square value={this.state.squares[i]} onClick={() => this.handleClick(i)} />;
@@ -92,7 +130,20 @@ class Board extends Component {
 
   toggle(i,j) {
     const grid = this.state.grid.slice();
-    grid[i][j] = grid[i][j] ? 0 : 1;
+    grid[i][j] = grid[i][j] === '1' ? '0' : '1';
+    var data = {availability: grid,
+                user: this.state.user,
+                eventName: this.props.data.eventName};
+    $.ajax({
+      type: "POST",
+      url: '/updateAvailability',
+      dataType: 'json',
+      data: data,
+      success: function(data) {
+        console.log(data);
+      }.bind(this)
+    });
+    console.log(grid);
     this.setState({grid: grid});
   } 
 
@@ -100,55 +151,143 @@ class Board extends Component {
 
   }
 
+  handleNameChange(event) {
+    this.setState({inputVal: event.target.value});
+  }
+  handlePassChange(event) {
+    this.setState({passVal: event.target.value});
+  }
+
+  handleSubmit(event){
+    console.log(event);
+    //console.log(this.state.inputVal);
+    //console.log(JSON.stringify(event));
+
+
+    event.preventDefault();
+
+  }
+
+  handleLogin(event){
+    console.log(event);
+    console.log('login');
+    var data = {
+      user: this.state.inputVal,
+      pass: this.state.passVal,
+      eventName: this.props.data.eventName
+    };
+    $.ajax({
+      url: '/loginForm',
+      type: 'POST',
+      dataType: 'json',
+      cache: false,
+      data: data,
+      success: function(data) {
+        console.log(data);
+        console.log('loginsucceeded');
+        var newGrid = this.state.grid;
+        var availabilities = this.props.data.eventAvailability;
+        for (var i = 0; i < availabilities.length; i++) {
+          console.log(availabilities[i]);
+          console.log(availabilities[i].user);
+          if(availabilities[i].user === data.user) {
+            newGrid = availabilities[i].availability;
+          }
+        }
+        this.setState({
+          user: data.user,
+          loggedIn: true,
+          grid: newGrid,
+          passVal: ''
+        })
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.log(err);
+      }.bind(this)
+    })
+  }
+
+  handleRegister(event){
+    console.log('Register');
+
+    var data = {
+      user: this.state.inputVal,
+      pass: this.state.passVal,
+      eventName: this.props.data.eventName
+    };
+    $.ajax({
+      url: '/registerForm',
+      type: 'POST',
+      dataType: 'json',
+      cache: false,
+      data: data,
+      success: function(data) {
+        console.log(data);
+        console.log('registersucceeded');
+        var newGrid = this.state.grid;
+        var availabilities = this.props.data.eventAvailability;
+        for (var i = 0; i < availabilities.length; i++) {
+          console.log(availabilities[i]);
+          console.log(availabilities[i].user);
+          if(availabilities[i].user === data.user) {
+            newGrid = availabilities[i].availability;
+          }
+        }
+        this.setState({
+          user: data.user,
+          passVal: '',
+          loggedIn: true
+        })
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.log(err);
+      }.bind(this)
+    })
+
+
+  }
+
   fillClick() {
     $.ajax({
-        url: '/data', //this.props.url,
-        dataType: 'json',
-        cache: false,
-        success: function(data) {
-          //this.setState({data: data});
-          console.log(data);
-          const grid = this.state.grid.slice();
-          console.log(grid);
-          var events = data.message;
-          for (var i = 0; i < events.length; i++) {
-            console.log(events[i]);
-            for (var j = events[i].startHour; j < events[i].endHour; j++) {
-              console.log(events[i].startDay);
-              console.log(j);
-              grid[j-9][events[i].startDay] = 1;
-            }
+      url: '/data', //this.props.url,
+      dataType: 'json',
+      cache: false,
+      success: function(data) {
+        const grid = this.state.grid.slice();
+        var events = data.message;
+        for (var i = 0; i < events.length; i++) {
+          for (var j = events[i].startHour; j < events[i].endHour; j++) {
+            grid[j - 9][events[i].startDay] = 1;
           }
-          console.log(grid);
-          this.setState({grid: grid});
+        }
+        this.setState({ grid: grid });
       }.bind(this),
       error: function(xhr, status, err) {
         //console.error(this.props.url, status, err.toString());
         console.log(err);
       }.bind(this)
     });
+
   }
 
 
   render() {
-    console.log(this);
-    console.log(this.props);
-    const status = 'Next player: X';
+    const status = 'FILLBOARD';
     const { className, ...props } = this.props;
     var curr = this;
     var mapped = this.state.times.map(function (el, x){
-    	var inner = curr.state.days.map(function (elem, y) {
-    		return (<Square value={curr.state.grid[x][y]} onClick={() => curr.toggle(x, y)} />);
-
+      var inner = curr.state.days.map(function (elem, y) {
+    	  return (<Square value={curr.state.grid[x][y]} onClick={() => curr.toggle(x, y)} />);
     	});
     	return (<div className="board-row"> {curr.state.times[x]} {inner} </div>);
     });
 
     var single = [0];
-    var dayStrings = ['MON', 'TU', 'WED', 'TH', 'FRI', "SAT", "SUN"]
+    var dayStrings = this.state.dayStrings;
+
     var dateRow = single.map(function (e, i) {
     	var inner = curr.state.days.map(function (elem, y) {
-    		return (<Square value={dayStrings[elem-1]} onClick={() => curr.placeholder()} />);
+    		return (<Square value={dayStrings[y]} onClick={() => curr.placeholder()} />);
     	});
       return (<div className="board-row"> {inner} </div>);
     });
@@ -157,11 +296,24 @@ class Board extends Component {
     return (
       <div className={classnames('Board', className)} {...props}>
         <div className="status">{status}</div>
+        {this.state.loggedIn ? 
+        <div id='board-container'>
         {dateRow}
         {mapped}
         <button className={classnames('Square', className)} {...props} onClick={() => this.fillClick()}>
         FILL
       </button>
+      </div >: 
+        <form onSubmit={this.handleSubmit}>
+          <label>
+            Name:
+            <input type="text" name="name" class="form-control" value={this.state.value} onChange={this.handleNameChange}/>
+            <input type="password" name="password" class="form-control" value={this.state.value} onChange={this.handlePassChange}/>
+          </label>
+          <button type="button" value="Login" onClick={() => this.handleLogin()}>Login</button>
+          <button type="button" value="Register" onClick={() => this.handleRegister()}>Register</button>
+        </form>
+        }
       </div>
     );
   }

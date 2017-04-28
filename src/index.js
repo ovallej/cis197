@@ -10,6 +10,7 @@ import './index.css';
 //console.log(props);
 //console.log(this.props);
 ReactDOM.render(
+	//socket setup here first
   <Routes history={browserHistory} />,
   document.getElementById('root')
 );

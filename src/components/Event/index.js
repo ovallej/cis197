@@ -1,10 +1,10 @@
-// src/components/About/index.js
 import React, { Component } from 'react';
 import classnames from 'classnames';
 import $ from 'jquery';
 
 import './index.css';
 import Board from '../Test';
+import EventBoard from '../EventBoard';
 
 class Event extends Component {
   static propTypes = {}
@@ -13,6 +13,12 @@ class Event extends Component {
   
   constructor(){
     super();
+    this.state = {
+      data: {},
+      ready: false,
+      user: ''
+    };
+
   }
 
   componentDidMount() {
@@ -24,9 +30,9 @@ class Event extends Component {
         cache: false,
         success: function(data) {
           //this.setState({data: data});
+          console.log("SETTING STATE DATA_EVENTCOMPONENT");
           console.log(data);
-          
-          //this.setState({grid: grid});
+          this.setState({data: data.event, ready: true, user: data.user});
       }.bind(this)
     });
 
@@ -34,6 +40,9 @@ class Event extends Component {
   }
 
   render() {
+    console.log("EVENT COMPONENT RENER");
+    console.log(this.state.data);
+    var data = this.state.data;
     const { className, ...props } = this.props;
     // two calndars?
     var weekDays = [1,2,3,4];
@@ -42,7 +51,9 @@ class Event extends Component {
         <h1>
           Event {this.props.params.pathParam}
         </h1>
-        <Board days={weekDays}/>
+        {this.state.ready ? (<div><Board data={data} user={this.state.user}/>
+        <EventBoard data={data}/></div> ) : <p>Loading</p>}
+        
       </div>
     );
   }
