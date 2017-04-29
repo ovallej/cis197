@@ -98,9 +98,7 @@ app.get('/auth/google', function (req, res, next) {
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.login'] }));
 
-// app.get('/auth/google', function (req, res) {
-//   passport.authenticate('google', { scope: ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/plus.login'] }));
-// });
+
 // GET /auth/google/callback
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  If authentication fails, the user will be redirected back to the
@@ -138,12 +136,7 @@ app.get('/test', function (req, res) {
         }
         cal.events.list(params, calEventList);
 
-        // function (err, li) {
-        //   relevantEvents = relevantEvents.concat(li.items);
-        //   if (i === calendarList.items.length) {
-        //     //res.json({ message: relevantEvents });
-        //   }
-        // });
+
       }
     }
   });
@@ -175,9 +168,6 @@ app.post('/updateAvailability', (req, res) => {
   var eventName = req.body.eventName;
   console.log('INUPDATEAVAILABILITY');
 
-  // Events.findOne({eventName: eventName}, function(err, data) {
-  //   console.log(data);
-  // });
   Events.updateAvailability(eventName, req.body.user, req.body.availability, function () {
     console.log('SUCCESS?');
     Events.findOne({ eventName: eventName }, function (err, data) {
@@ -274,14 +264,10 @@ app.post('/data', (req, res) => {
       newEndDate.setDate(newEndDate.getDate() + 1);
       endDateArr.push(newEndDate);
     }
-    // console.log(startDateArr);
-    // console.log(endDateArr);
 
     var cal = goog.calendar('v3');
     cal.calendarList.list(function (err, calendarList) {
       if (err || !calendarList) {
-        // console.log(calendarList);
-        // console.log(err);
         res.json({ message: 'Im just testing to see if this works NOT' });
       }
 

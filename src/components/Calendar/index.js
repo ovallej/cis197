@@ -1,4 +1,3 @@
-// src/components/NotFound/index.js
 import React, { Component } from 'react';
 import classnames from 'classnames';
 import { withRouter } from 'react-router' 
@@ -6,13 +5,8 @@ import { withRouter } from 'react-router'
 import './style.css';
 import Square from './Square';
 import $ from 'jquery'; 
-//        <Square />
 
-//export default class Calendar extends Component {
 class Calendar extends Component {
-  //static propTypes = {}
-  //static defaultProps = {}
-  //state = {}
 
   constructor(props){
     super(props);
@@ -24,10 +18,7 @@ class Calendar extends Component {
       weeks: weeks,
       selected: [],
       value: ''
-      //grid: Arrays.fill(weeks.length).fill(0).map(() => new Array(days.length).fill(0));
     }
-    //var newGrid = new Array(14).fill(0).map(() => new Array(3).fill(0));
-
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -45,12 +36,12 @@ class Calendar extends Component {
         break;
       }
     }
-    
+
     if (index !== -1) {
       currSelected.splice(index, 1);
     } else {
       currSelected.push(obj);
-      currSelected.sort(function(x, y) {
+      currSelected.sort(function (x, y) {
         if (y.month !== x.month) {
           return x.month - y.month;
         } else {
@@ -58,64 +49,33 @@ class Calendar extends Component {
         }
       });
     }
-    //}
-    this.setState({selected: currSelected});
-    // console.log(this.state.selected);
+    this.setState({ selected: currSelected });
 
 
   }
 
+
   handleChange(event) {
-    this.setState({value: event.target.value});
+    this.setState({ value: event.target.value });
   }
 
   handleSubmit(event) {
     // console.log(this.props);
-    var data = {event: this.state.value, dates:this.state.selected};
+    var data = { event: this.state.value, dates: this.state.selected };
     // console.log(data);
     $.ajax({
       type: 'POST',
       url: '/event',
       dataType: 'json',
       data: data,
-      success: function(data) {
+      success: function (data) {
         // console.log(data);
         this.props.router.push('/EventPage/' + this.state.value);
       }.bind(this),
-      error: function(err) {
+      error: function (err) {
         console.log(err);
       }.bind(this)
     });
-
-
-/*
-    $.ajax({
-      url: '/data', //this.props.url,
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        //this.setState({data: data});
-        console.log(data);
-        const grid = this.state.grid.slice();
-        console.log(grid);
-        var events = data.message;
-        for (var i = 0; i < events.length; i++) {
-          console.log(events[i]);
-          for (var j = events[i].startHour; j < events[i].endHour; j++) {
-            console.log(events[i].startDay);
-            console.log(j);
-            grid[j - 9][events[i].startDay] = 1;
-          }
-        }
-        console.log(grid);
-        this.setState({ grid: grid });
-      }.bind(this),
-      error: function(xhr, status, err) {
-        //console.error(this.props.url, status, err.toString());
-        console.log(err);
-      }.bind(this)
-    });
-    */
 
 
     event.preventDefault();
@@ -123,9 +83,8 @@ class Calendar extends Component {
 
 
 
+
   render() {
-    //const { className, ...props } = this.props;
-    //<div className={classnames('Calendar', className)} {...props}>
     var months = [
       'Jan',
       'Feb',
@@ -165,10 +124,6 @@ class Calendar extends Component {
         var obj = {day: currDate, month:currMonth};
         var idx = indexOf(obj, curr.state.selected);
         var style = (idx >= 0) ? 'green' : 'blue';
-        console.log(idx);
-        console.log(style);
-        console.log(obj);
-        console.log(curr.state.selected);
         return (<Square value={currDate} color={style} onClick={() => curr.squareClick({day: currDate, month:currMonth})} />);
       });
       return (<div className="board-row"> {inner} </div>);

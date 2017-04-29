@@ -21,13 +21,12 @@ eventSchema.statics.addEvent = function (eventName, eventDates, cb) {
 }
 
 eventSchema.statics.addUser = function (eventName, user, cb) {
-  console.log('BEFORE FIND');
+  //console.log('BEFORE FIND');
   console.log(eventName);
   //console.log(this);
   this.findOne({ eventName: eventName }, function (err, event) {
     console.log(err);
     console.log(event);
-    console.log('wft');
     if (!event) {
       console.log('no event');
       cb(false);
