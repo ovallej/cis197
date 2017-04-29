@@ -66,6 +66,7 @@ eventSchema.statics.updateAvailability = function(eventName, user, availability,
           event.eventAvailability[i].availability = availability;
           test.update({ _id: event.id }, { $set: { eventAvailability: event.eventAvailability } }, function(err) {
             console.log("IN TEST");
+            cb(event);
           });
           break;
         }

@@ -91,8 +91,6 @@ passport.deserializeUser(function(user, done) {
 //   back to this application at /auth/google/callback
 
 app.get('/auth/google', function (req, res, next){
-  console.log(req.path);
-  console.log(req.get('Referrer'));
   req.session.returnTo = req.get('Referrer');
   next();
 })
@@ -110,9 +108,6 @@ app.get('/auth/google',
 app.get('/auth/google/callback',
   passport.authenticate('google', { failureRedirect: '/login' }),
   function(req, res) {
-    console.log(req.path);
-    console.log("authenticateD");
-    console.log(req.session.returnTo);
     var returnTo = req.session.returnTo;
     req.session.returnTo = null;
     res.redirect(returnTo);
@@ -127,7 +122,6 @@ app.get('/test', function(req, res) {
     var endDate = new Date(2017, 3, 24, 0, 0, 0, 0);
     relevantEvents = [];
     for (var i = 0; i < calendarList.items.length; i++) {
-      console.log('calendarlist.length ' + calendarList.items.length);
       if (calendarList.items[i].accessRole === 'owner') {
         params = {
           'calendarId': calendarList.items[i].id,
@@ -136,12 +130,10 @@ app.get('/test', function(req, res) {
           'timeMax': endDate.toISOString()
         }
         cal.events.list(params, function(err, li) {
-          console.log('li.length ' + li.items.length);
           relevantEvents = relevantEvents.concat(li.items);
           if (i === calendarList.items.length) {
             //res.json({ message: relevantEvents });
           }
-          console.log("i:" + i + " relev " + relevantEvents.length);
         });
       }
     }
@@ -157,8 +149,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.post('/event', (req, res) => {
-  console.log(req.body.dates);
-  console.log(req.body.event);
   Events.addEvent(req.body.event, req.body.dates, function(err) {
     if (err) console.log(err);
     else {
@@ -173,23 +163,29 @@ app.post('/updateAvailability', (req, res) => {
   var user = req.body.user;
   var availability = req.body.availability;
   var eventName = req.body.eventName;
-  Events.findOne({eventName: eventName}, function(err, data) {
-    console.log(data);
-  });
+  console.log('INUPDATEAVAILABILITY');
+
+  // Events.findOne({eventName: eventName}, function(err, data) {
+  //   console.log(data);
+  // });
   Events.updateAvailability(eventName,req.body.user, req.body.availability, function(){
     console.log('SUCCESS?');
+    Events.findOne({eventName: eventName}, function(err, data) {
+      console.log("FOUND EVENT WITHIN UPDATE*******************");
+      res.json(data);
+  });
+
   });
 
 });
 
 app.get('/eventData/:eventName', (req, res) => {
-  console.log('event/eventname');
-  console.log(req.params.eventName);
   Events.findOne({ eventName: req.params.eventName }, function(err, event) {
     console.log('REQ SESSION NAME: ' + req.session.username);
     console.log('REQ SESSION AUTH EVENTDATA: ' + req.isAuthenticated());
     var user = req.session.username ? req.session.username  : '';
     var loggedEvent = req.session.event ? req.session.event : '';
+    // console.log(event);
 
     res.json({ event: event, user: user, auth: req.isAuthenticated(), loggedEvent: loggedEvent });
   });
@@ -210,7 +206,6 @@ app.post('/loginForm', (req, res) => {
         req.session.event = eventName;
         Events.findUser(eventName, user, function(data) {
           console.log('IN EVENT FINDUSER');
-          console.log(data);
           res.json({
             data: data,
             user: user,
@@ -231,9 +226,6 @@ app.post('/registerForm', (req, res) => {
   var user = req.body.user;
   var eventName = req.body.eventName;
   var pass = req.body.pass;
-  console.log(user);
-  console.log(eventName);
-  console.log(pass);
 
   User.addUser(user, pass, function(err) {
     if (err) {
@@ -245,8 +237,8 @@ app.post('/registerForm', (req, res) => {
   });
 
   Events.addUser(eventName, user, function(data) {
-    console.log('ADDEDDSUSUSUSUUEURUR ' + data);
-    console.log('SUCCESS ADDED TO EVENT' + data);
+    // console.log('ADDEDDSUSUSUSUUEURUR ' + data);
+    // console.log('SUCCESS ADDED TO EVENT' + data);
     req.session.username = user;
     req.session.event = eventName;
     res.json({
@@ -264,7 +256,7 @@ app.post('/registerForm', (req, res) => {
 app.post('/data', (req, res) => {
   console.log('DATA ISAUTH ' + req.isAuthenticated());
   if (req.isAuthenticated()) {
-    console.log(req.body.dates);
+    // console.log(req.body.dates);
     var startDateArr = [];
     var endDateArr = [];
     for(var i = 0; i < req.body.dates.length; i++){
@@ -273,14 +265,14 @@ app.post('/data', (req, res) => {
       newEndDate.setDate(newEndDate.getDate()+1);
       endDateArr.push(newEndDate);
     }
-    console.log(startDateArr);
-    console.log(endDateArr);
+    // console.log(startDateArr);
+    // console.log(endDateArr);
 
     var cal = goog.calendar('v3');
     cal.calendarList.list(function(err, calendarList) {
       if (err || !calendarList) {
-        console.log(calendarList);
-        console.log(err);
+        // console.log(calendarList);
+        // console.log(err);
         res.json({ message: "I'm just testing to see if this works NOT" });
       }
 
@@ -314,8 +306,8 @@ app.post('/data', (req, res) => {
               if (counter == total) {
                 var response = [];
                 for (var j = 0; j < relevantEvents.length; j++) {
-                  console.log('DAY');
-                  console.log((new Date(relevantEvents[j].start.dateTime)).getDate());
+                  // console.log('DAY');
+                  // console.log((new Date(relevantEvents[j].start.dateTime)).getDate());
                   response.push({
                     name: relevantEvents[j].summary,
                     startDay: (new Date(relevantEvents[j].start.dateTime)).getDate(),

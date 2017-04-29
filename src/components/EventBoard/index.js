@@ -11,8 +11,8 @@ class Square extends Component {
   static defaultProps = {}
   state = {}
   
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       value: null,
     };
@@ -53,12 +53,33 @@ class EventBoard extends Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+
+    var newDates = [];
+    var inputDates = nextProps.data.eventDates;
+    for (var i = 0; i < inputDates.length; i++) {
+      newDates.push((parseInt(inputDates[i].month)+1) + '/' + inputDates[i].day);
+    }
+    var availabilities = nextProps.data.eventAvailability;
+    var newGrid = new Array(this.state.times.length).fill(0).map(() => new Array(newDates.length).fill(0));
+    //var newGrid = new Array(14).fill(0).map(() => new Array(3).fill(0));
+    for (var i = 0; i < availabilities.length; i++) {
+      for (var j = 0; j < availabilities[i].availability.length; j++) {
+        for (var k = 0; k < availabilities[i].availability[j].length; k++) {
+          newGrid[j][k] += parseInt(availabilities[i].availability[j][k]);
+        }
+      }
+    }
+
+    this.setState({ data: nextProps.data, grid: newGrid});  
+  }
+
   componentDidMount() {
 
     var newDates = [];
     var inputDates = this.props.data.eventDates;
     for (var i = 0; i < inputDates.length; i++) {
-      newDates.push(inputDates[i].month + '/' + inputDates[i].day);
+      newDates.push((parseInt(inputDates[i].month)+1) + '/' + inputDates[i].day);
     }
     var availabilities = this.props.data.eventAvailability;
     var newGrid = new Array(this.state.times.length).fill(0).map(() => new Array(newDates.length).fill(0));
@@ -103,9 +124,8 @@ class EventBoard extends Component {
 
 
   render() {
-    console.log('OMG2');
     
-    const status = 'EventBoard2';
+    const status = 'EventBoard';
     const { className, ...props } = this.props;
     var curr = this;
     var mapped = this.state.times.map(function (el, x){

@@ -32,8 +32,6 @@ class Calendar extends Component {
 
   }
   squareClick(obj) {
-    console.log('SQUARECKILC');
-    console.log(i);
     var index = -1;
     var currSelected = this.state.selected.slice();
 
@@ -59,7 +57,7 @@ class Calendar extends Component {
     }
     //}
     this.setState({selected: currSelected});
-    console.log(this.state.selected);
+    // console.log(this.state.selected);
 
 
   }
@@ -69,16 +67,16 @@ class Calendar extends Component {
   }
 
   handleSubmit(event) {
-    console.log(this.props);
+    // console.log(this.props);
     var data = {event: this.state.value, dates:this.state.selected};
-    console.log(data);
+    // console.log(data);
     $.ajax({
       type: 'POST',
       url: '/event',
       dataType: 'json',
       data: data,
       success: function(data) {
-        console.log(data);
+        // console.log(data);
         this.props.router.push('/EventPage/' + this.state.value);
       }.bind(this),
       error: function(err) {

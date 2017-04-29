@@ -4,6 +4,7 @@ import classnames from 'classnames';
 //import App from './App';
 import './index.css';
 import $ from 'jquery'; 
+import EventBoard from '../EventBoard';
 
 class Square extends Component {
   static propTypes = {}
@@ -88,27 +89,29 @@ class Board extends Component {
   }
 
   componentDidMount() {
-    console.log(this.props);
-    console.log(this.props.data);
+    // console.log(this.props);
+    // console.log(this.props.data);
 
     var newDates = [];
     var inputDates = this.props.data.eventDates;
     for (var i = 0; i < inputDates.length; i++) {
-      newDates.push(inputDates[i].month + '/' + inputDates[i].day);
+      newDates.push((parseInt(inputDates[i].month)+1) + '/' + inputDates[i].day);
     }
     var userAvail = [];
     var user = this.props.user;
-    console.log(user);
+    // console.log(user);
     var logged = ((this.props.user) && this.props.loggedEvent === this.props.data.eventName) ? true : false;
-    console.log('logged' + logged + " " + this.props.user);
+    // console.log('logged' + logged + " " + this.props.user);
     var availabilities = this.props.data.eventAvailability;
     for (var i = 0; i < availabilities.length; i++) {
-      console.log(availabilities[i]);
-      console.log(availabilities[i].user);
-      if(availabilities[i].user === 'u1') {
+      // console.log(availabilities[i]);
+      // console.log(availabilities[i].user);
+      if(availabilities[i].user === user) {
         userAvail = availabilities[i].availability;
       }
     }
+    // console.log('AVAIL LEN: ' + availabilities);
+    // console.log('USER AVAIL: ' + userAvail);
     this.setState({
       days: new Array(newDates.length).fill(0),
       dayStrings: newDates,
@@ -131,6 +134,7 @@ class Board extends Component {
   }
 
   toggle(i,j) {
+    // console.log('CALLING TOGGLE');
     const grid = this.state.grid.slice();
     grid[i][j] = grid[i][j] === '1' ? '0' : '1';
     var data = {availability: grid,
@@ -142,11 +146,14 @@ class Board extends Component {
       dataType: 'json',
       data: data,
       success: function(data) {
-        console.log(data);
+        // console.log('TOGGLE DATA: ');
+        // console.log(data);
+        // console.log('CURR STATE DATA');
+        // console.log(this.state.data);
+        this.setState({grid: grid, data:data});
       }.bind(this)
     });
-    console.log(grid);
-    this.setState({grid: grid});
+    // console.log(grid);
   } 
 
   placeholder() {
@@ -161,7 +168,7 @@ class Board extends Component {
   }
 
   handleSubmit(event){
-    console.log(event);
+    // console.log(event);
     //console.log(this.state.inputVal);
     //console.log(JSON.stringify(event));
 
@@ -171,8 +178,8 @@ class Board extends Component {
   }
 
   handleLogin(event){
-    console.log(event);
-    console.log('login');
+    // console.log(event);
+    // console.log('login');
     var data = {
       user: this.state.inputVal,
       pass: this.state.passVal,
@@ -185,13 +192,13 @@ class Board extends Component {
       cache: false,
       data: data,
       success: function(data) {
-        console.log(data);
-        console.log('loginsucceeded');
+        // console.log(data);
+        // console.log('loginsucceeded');
         var newGrid = this.state.grid;
         var availabilities = this.props.data.eventAvailability;
         for (var i = 0; i < availabilities.length; i++) {
-          console.log(availabilities[i]);
-          console.log(availabilities[i].user);
+          // console.log(availabilities[i]);
+          // console.log(availabilities[i].user);
           if(availabilities[i].user === data.user) {
             newGrid = availabilities[i].availability;
           }
@@ -211,7 +218,7 @@ class Board extends Component {
   }
 
   handleRegister(event){
-    console.log('Register');
+    // console.log('Register');
 
     var data = {
       user: this.state.inputVal,
@@ -225,9 +232,19 @@ class Board extends Component {
       cache: false,
       data: data,
       success: function(data) {
-        console.log(data);
-        console.log('registersucceeded');
-        var newGrid = this.state.grid;
+        // console.log(data);
+        // console.log('registersucceeded');
+        var newGrid = this.state.grid.slice();
+        // console.log('OLD GIRD');
+        // console.log(this.state.grid);
+        for(var i = 0; i < newGrid.length; i++) {
+          for(var j = 0; j < newGrid[i].length; j++) {
+            newGrid[i][j] = '0';
+          }
+        }
+        // console.log('NEW GRID');
+        // console.log(newGrid);
+        /*
         var availabilities = this.props.data.eventAvailability;
         for (var i = 0; i < availabilities.length; i++) {
           console.log(availabilities[i]);
@@ -236,8 +253,10 @@ class Board extends Component {
             newGrid = availabilities[i].availability;
           }
         }
+        */
         this.setState({
           user: data.user,
+          grid: newGrid,
           passVal: '',
           loggedIn: true
         })
@@ -252,6 +271,7 @@ class Board extends Component {
   }
 
   fillClick() {
+    // console.log('CALLING FILLCLICK');
     $.ajax({
       url: '/data', //this.props.url,
       dataType: 'json',
@@ -259,15 +279,15 @@ class Board extends Component {
       type: 'POST',
       data: { dates: this.props.data.eventDates },
       success: function(data) {
-        console.log(data);
+        // console.log(data);
         var events = data.message;
         const grid = this.state.grid.slice();
         var eventDates = this.props.data.eventDates;
-        console.log(this.state.grid);
+        // console.log(this.state.grid);
 
         function indexOf(event, eventDates) {
           for (var i = 0; i < eventDates.length; i++) {
-            if(event.startDay == eventDates[i].day && event.month == eventDates[i].month) {
+            if (event.startDay == eventDates[i].day && event.month == eventDates[i].month) {
               return i;
             }
           }
@@ -276,39 +296,33 @@ class Board extends Component {
 
         for (var i = 0; i < events.length; i++) {
           var idx = indexOf(events[i], eventDates);
-          if(idx >= 0) {
+          if (idx >= 0) {
             for (var j = events[i].startHour; j < events[i].endHour; j++) {
               grid[j - 9][idx] = '1';
             }
           }
 
         }
-        this.setState({ grid: grid });
 
-        /*
-
-        currSelected.sort(function(x, y) {
-        if (y.month !== x.month) {
-          return x.month - y.month;
-        } else {
-          return x.day - y.day;
-        }
-      });
-      */
-
-        /*
-        const grid = this.state.grid.slice();
-        var events = data.message;
-        for (var i = 0; i < events.length; i++) {
-          for (var j = events[i].startHour; j < events[i].endHour; j++) {
-            grid[j - 9][events[i].startDay] = '1';
-          }
-        }
-        this.setState({ grid: grid });
-        */
+        var updateData = {
+          availability: grid,
+          user: this.state.user,
+          eventName: this.props.data.eventName
+        };
+        $.ajax({
+          type: "POST",
+          url: '/updateAvailability',
+          dataType: 'json',
+          data: updateData,
+          success: function(data) {
+            // console.log('FILLCLICK DATA: ');
+            // console.log(data);
+            this.setState({grid: grid, data:data});
+          }.bind(this)
+        });
+        //this.setState({ grid: grid });
       }.bind(this),
       error: function(xhr, status, err) {
-        //console.error(this.props.url, status, err.toString());
         console.log(err);
       }.bind(this)
     });
@@ -316,7 +330,11 @@ class Board extends Component {
   }
 
 
+
   render() {
+    // console.log('RENDER DATA');
+    // console.log(this.state.data);
+    var eventBoard = (<EventBoard data={this.state.data}/>);
     const status = 'FILLBOARD';
     const { className, ...props } = this.props;
     var curr = this;
@@ -367,6 +385,7 @@ class Board extends Component {
           <button type="button" value="Register" onClick={() => this.handleRegister()}>Register</button>
         </form>
         }
+      {eventBoard}
       </div>
     );
   }
