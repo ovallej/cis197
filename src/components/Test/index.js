@@ -192,10 +192,10 @@ class Board extends Component {
       cache: false,
       data: data,
       success: function(data) {
-        // console.log(data);
+         console.log(data);
         // console.log('loginsucceeded');
-        var newGrid = this.state.grid;
-        var availabilities = this.props.data.eventAvailability;
+        var newGrid = this.state.grid.slice();
+        var availabilities = data.data.eventAvailability;
         for (var i = 0; i < availabilities.length; i++) {
           // console.log(availabilities[i]);
           // console.log(availabilities[i].user);
@@ -206,6 +206,7 @@ class Board extends Component {
         this.setState({
           user: data.user,
           loggedIn: true,
+          data: data.data,
           grid: newGrid,
           passVal: ''
         })
@@ -234,12 +235,23 @@ class Board extends Component {
       success: function(data) {
         // console.log(data);
         // console.log('registersucceeded');
-        var newGrid = this.state.grid.slice();
+        // var newGrid = this.state.grid.slice();
         // console.log('OLD GIRD');
         // console.log(this.state.grid);
-        for(var i = 0; i < newGrid.length; i++) {
-          for(var j = 0; j < newGrid[i].length; j++) {
-            newGrid[i][j] = '0';
+        // for(var i = 0; i < newGrid.length; i++) {
+        //   for(var j = 0; j < newGrid[i].length; j++) {
+        //     newGrid[i][j] = '0';
+        //   }
+        // }
+        console.log(data);
+
+        var newGrid = this.state.grid.slice();
+        var availabilities = data.data.eventAvailability;
+        for (var i = 0; i < availabilities.length; i++) {
+          // console.log(availabilities[i]);
+          // console.log(availabilities[i].user);
+          if(availabilities[i].user === data.user) {
+            newGrid = availabilities[i].availability;
           }
         }
         // console.log('NEW GRID');
@@ -257,6 +269,7 @@ class Board extends Component {
         this.setState({
           user: data.user,
           grid: newGrid,
+          data: data.data,
           passVal: '',
           loggedIn: true
         })
@@ -338,12 +351,15 @@ class Board extends Component {
     const status = 'FILLBOARD';
     const { className, ...props } = this.props;
     var curr = this;
-    var mapped = this.state.times.map(function (el, x){
-      var inner = curr.state.days.map(function (elem, y) {
-    	  return (<Square value={curr.state.grid[x][y]} onClick={() => curr.toggle(x, y)} />);
-    	});
-    	return (<div className="board-row"> {curr.state.times[x]} {inner} </div>);
-    });
+    var mapped = <div/>;
+    if(this.state.loggedIn) {
+      mapped = this.state.times.map(function (el, x){
+        var inner = curr.state.days.map(function (elem, y) {
+    	    return (<Square value={curr.state.grid[x][y]} onClick={() => curr.toggle(x, y)} />);
+    	  });
+    	  return (<div className="board-row"> {curr.state.times[x]} {inner} </div>);
+      });
+    }
 
     var single = [0];
     var dayStrings = this.state.dayStrings;

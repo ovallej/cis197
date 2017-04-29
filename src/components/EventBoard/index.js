@@ -58,7 +58,7 @@ class EventBoard extends Component {
     var newDates = [];
     var inputDates = nextProps.data.eventDates;
     for (var i = 0; i < inputDates.length; i++) {
-      newDates.push((parseInt(inputDates[i].month)+1) + '/' + inputDates[i].day);
+      newDates.push((parseInt(inputDates[i].month) + 1) + '/' + inputDates[i].day);
     }
     var availabilities = nextProps.data.eventAvailability;
     var newGrid = new Array(this.state.times.length).fill(0).map(() => new Array(newDates.length).fill(0));
@@ -71,6 +71,14 @@ class EventBoard extends Component {
       }
     }
 
+    for (var j = 0; j < newGrid.length; j++) {
+      for (var k = 0; k < newGrid[j].length; k++) {
+        newGrid[j][k] = newGrid[j][k] + '/' + availabilities.length;
+      }
+    }
+    //console.log(newGrid);
+
+
     this.setState({ data: nextProps.data, grid: newGrid});  
   }
 
@@ -79,7 +87,7 @@ class EventBoard extends Component {
     var newDates = [];
     var inputDates = this.props.data.eventDates;
     for (var i = 0; i < inputDates.length; i++) {
-      newDates.push((parseInt(inputDates[i].month)+1) + '/' + inputDates[i].day);
+      newDates.push((parseInt(inputDates[i].month) + 1) + '/' + inputDates[i].day);
     }
     var availabilities = this.props.data.eventAvailability;
     var newGrid = new Array(this.state.times.length).fill(0).map(() => new Array(newDates.length).fill(0));
@@ -91,6 +99,16 @@ class EventBoard extends Component {
         }
       }
     }
+
+    for (var j = 0; j < newGrid.length; j++) {
+      for (var k = 0; k < newGrid[j].length; k++) {
+        newGrid[j][k] = newGrid[j][k] + '/' + availabilities.length;
+      }
+    }
+    //console.log(newGrid);
+
+
+
 
     this.setState({
       days: new Array(newDates.length).fill(0),

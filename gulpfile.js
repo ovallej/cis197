@@ -3,15 +3,19 @@ var eslint = require('gulp-eslint');
 //var zip = require('gulp-zip');
 
 var FILES = [
-  'server/app.js',
   'server/*.js',
-  'components/*/*.js',
-  'components/*.js'
+  'src/*.js',
+  'src/components/*/*.js',
+  'src/components/*.js'
 ];
+
+var options = {
+  rulePaths: ['.eslint_rules']
+};
 
 gulp.task('eslint', function () {
   return gulp.src(FILES)
-    .pipe(eslint({}))
+    .pipe(eslint(options))
     .pipe(eslint.format());
 });
 

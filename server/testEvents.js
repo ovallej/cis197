@@ -28,23 +28,23 @@ mongoose.connect('mongodb://localhost/newDb');
 //   });
 
 
-Events.addUser('test2', 'u2', function(err, res) {
-  if (err) console.log(err);
-  else {
-    console.log("SUCCESS");
-    console.log(res);
-    Events.find({ eventName: 'event1' }, function(err, event) {
-      console.log(err);
-      console.log(event);
-    });
-  }
-});
+// Events.addUser('test2', 'u2', function(err, res) {
+//   if (err) console.log(err);
+//   else {
+//     console.log("SUCCESS");
+//     console.log(res);
+//     Events.find({ eventName: 'event1' }, function(err, event) {
+//       console.log(err);
+//       console.log(event);
+//     });
+//   }
+// });
 
 
 
 
 // Events.updateAvailability('event1', 'u1', [1,1,1], function (err, resp){
-// 	console.log(resp);
+// console.log(resp);
 // })
 
 

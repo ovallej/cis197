@@ -10,21 +10,21 @@ var eventSchema = new Schema({
   eventAvailability: { type: Array, required: false }
 });
 
-mongoose.connection.on('error', function(err) {
+mongoose.connection.on('error', function (err) {
   console.error('MongoDB error: %s', err);
 });
 
-eventSchema.statics.addEvent = function(eventName, eventDates, cb) {
+eventSchema.statics.addEvent = function (eventName, eventDates, cb) {
   //var avail = new Array(14).fill(0).map(() => new Array(eventDates.length).fill(0));
   var newEvent = new this({ eventName: eventName, eventDates: eventDates, users: [], eventAvailability: [] });
   newEvent.save(cb);
 }
 
-eventSchema.statics.addUser = function(eventName, user, cb) {
-  console.log("BEFORE FIND");
+eventSchema.statics.addUser = function (eventName, user, cb) {
+  console.log('BEFORE FIND');
   console.log(eventName);
   //console.log(this);
-  this.findOne({ eventName: eventName }, function(err, event) {
+  this.findOne({ eventName: eventName }, function (err, event) {
     console.log(err);
     console.log(event);
     console.log('wft');
@@ -34,10 +34,10 @@ eventSchema.statics.addUser = function(eventName, user, cb) {
     } else {
       event.users.push(user);
       event.eventAvailability.push({ user: user, availability: new Array(14).fill(0).map(() => new Array(event.eventDates.length).fill(0)) });
-      event.save(function(err) {
+      event.save(function (err) {
         if (err) throw err;
         console.log('event successfully updated');
-        cb(true);
+        cb(event);
       });
     }
   });
@@ -56,16 +56,16 @@ function updateMatrix(m1, m2, m3) {
   }
   return outputMatrix;
 }
-eventSchema.statics.updateAvailability = function(eventName, user, availability, cb) {
+eventSchema.statics.updateAvailability = function (eventName, user, availability, cb) {
   var test = this;
-  this.findOne({ eventName: eventName }, function(err, event) {
+  this.findOne({ eventName: eventName }, function (err, event) {
     if (!event) cb(false);
     else {
       for (var i = 0; i < event.eventAvailability.length; i++) {
         if (event.eventAvailability[i].user === user) {
           event.eventAvailability[i].availability = availability;
-          test.update({ _id: event.id }, { $set: { eventAvailability: event.eventAvailability } }, function(err) {
-            console.log("IN TEST");
+          test.update({ _id: event.id }, { $set: { eventAvailability: event.eventAvailability } }, function (err) {
+            console.log('IN TEST');
             cb(event);
           });
           break;
@@ -76,19 +76,18 @@ eventSchema.statics.updateAvailability = function(eventName, user, availability,
   });
 }
 
-eventSchema.statics.findUser = function(eventName, user, cb) {
-  this.findOne({eventName:eventName}, function (err, event) {
-    if(!event) {
+eventSchema.statics.findUser = function (eventName, user, cb) {
+  this.findOne({ eventName: eventName }, function (err, event) {
+    if (!event) {
       cb(false);
-    }
-    else {
+    } else {
       console.log(event);
       for (var i = 0; i < event.users.length; i++) {
         if (event.users[i] === user) {
-          cb(true);
+          cb(event);
         }
       }
-    //cb(false);
+      //cb(false);
     }
   });
 }

@@ -8,15 +8,15 @@ var userSchema = new Schema({
   password: { type: String, required: true }
 });
 
-userSchema.pre('save', function(next) {
+userSchema.pre('save', function (next) {
   var user = this;
 
   if (!user.isModified('password')) return next();
 
-  bcrypt.genSalt(10, function(err, salt) {
+  bcrypt.genSalt(10, function (err, salt) {
     if (err) return next(err);
 
-    bcrypt.hash(user.password, salt, function(err, hash) {
+    bcrypt.hash(user.password, salt, function (err, hash) {
       if (err) return next(err);
 
       user.password = hash;
@@ -25,16 +25,16 @@ userSchema.pre('save', function(next) {
   });
 });
 
-userSchema.statics.addUser = function(username, password, cb) {
-  var newUser = new this({ username: username, password: password});
+userSchema.statics.addUser = function (username, password, cb) {
+  var newUser = new this({ username: username, password: password });
   newUser.save(cb);
 }
 
-userSchema.statics.checkIfLegit = function(username, password, cb) {
-  this.findOne({ username: username }, function(err, user) {
+userSchema.statics.checkIfLegit = function (username, password, cb) {
+  this.findOne({ username: username }, function (err, user) {
     if (!user) cb('no user');
     else {
-      bcrypt.compare(password, user.password, function(err, isRight) {
+      bcrypt.compare(password, user.password, function (err, isRight) {
         if (err) return cb(err);
         cb(null, isRight);
       });

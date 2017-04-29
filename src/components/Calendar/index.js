@@ -123,9 +123,27 @@ class Calendar extends Component {
   render() {
     //const { className, ...props } = this.props;
     //<div className={classnames('Calendar', className)} {...props}>
-    
+    var months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+
     var date = new Date(); // get current date
-    var first = date.getDate() - date.getDay(); 
+    var first = date.getDate() - date.getDay();
+    var monthIDX = date.getMonth();
+    var before = (<p> {months[monthIDX]}</p>);
+    var after = (<p> {months[(monthIDX+1) % 12]}</p>);
+
     date.setDate(first);
     var curr = this;
     var dateRow = curr.state.weeks.map(function (e, i) {
@@ -142,8 +160,10 @@ class Calendar extends Component {
         <h1>
           Calendar 
         </h1>
-        <Square value={123} onClick={() => curr.squareClick(123)}/>
+        <div> Choose dates and a name to create Your Event! (You will be redirected to your event link)</div>
+        {before}
         {dateRow}
+        {after}
         <form onSubmit={this.handleSubmit}>
         <label>
           Name:
