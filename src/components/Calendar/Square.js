@@ -2,15 +2,15 @@ import React, { Component } from 'react';
 import './style.css';
 
 class Square extends React.Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       value: null,
     };
   }
   render() {
     return (
-      <button className="Square" onClick={() => this.props.onClick()}>
+      <button className="button" style={{color: this.props.color}}onClick={() => this.props.onClick()}>
         {this.props.value}
       </button>
     );

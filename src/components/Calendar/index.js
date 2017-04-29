@@ -24,7 +24,10 @@ class Calendar extends Component {
       weeks: weeks,
       selected: [],
       value: ''
+      //grid: Arrays.fill(weeks.length).fill(0).map(() => new Array(days.length).fill(0));
     }
+    //var newGrid = new Array(14).fill(0).map(() => new Array(3).fill(0));
+
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -151,7 +154,22 @@ class Calendar extends Component {
         var currMonth = date.getMonth();
         var currDate = date.getDate();
         date.setDate(date.getDate()+1);
-        return (<Square value={currDate} onClick={() => curr.squareClick({day: currDate, month:currMonth})} />);
+        function indexOf(event, eventDates) {
+          for (var i = 0; i < eventDates.length; i++) {
+            if (event.day == eventDates[i].day && event.month == eventDates[i].month) {
+              return i;
+            }
+          }
+          return -1;
+        }
+        var obj = {day: currDate, month:currMonth};
+        var idx = indexOf(obj, curr.state.selected);
+        var style = (idx >= 0) ? 'green' : 'blue';
+        console.log(idx);
+        console.log(style);
+        console.log(obj);
+        console.log(curr.state.selected);
+        return (<Square value={currDate} color={style} onClick={() => curr.squareClick({day: currDate, month:currMonth})} />);
       });
       return (<div className="board-row"> {inner} </div>);
     });
